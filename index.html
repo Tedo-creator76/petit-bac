@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Petit Bac</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,700;12..96,800&family=Kalam:wght@400;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: une copie d'écolier sur papier Seyès — marge rouge, encre bleue, correction au stylo rouge */
+:root{color-scheme:light;
+  --paper:#fbfcfe; --line:#c9d6ec; --line-strong:#9fb4d8; --margin:#e0525a;
+  --ink:#1f2a44; --ink-soft:#5a6582; --blue:#2448a8; --red:#c8323a; --ok:#1f8a4c; --amber:#b36b00;
+  --chip:#eef2fa; --card:#ffffff;
+  --f-display:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --f-hand:"Kalam", "Comic Sans MS", cursive;
+  --f-mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#161b26; --line:#232c3e; --line-strong:#33405a; --margin:#a8434a;
+  --ink:#e6ebf5; --ink-soft:#9aa5bd; --blue:#8fb0ff; --red:#ff7a80; --ok:#5fd394; --amber:#f0b45a;
+  --chip:#1f2636; --card:#1b2130; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#161b26; --line:#232c3e; --line-strong:#33405a; --margin:#a8434a;
+  --ink:#e6ebf5; --ink-soft:#9aa5bd; --blue:#8fb0ff; --red:#ff7a80; --ok:#5fd394; --amber:#f0b45a;
+  --chip:#1f2636; --card:#1b2130; color-scheme:dark}
+
+html,body{min-height:100%}
+body{margin:0}
+*{box-sizing:border-box}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--f-display);
+  background-image:
+    linear-gradient(to right, transparent calc(max(16px, env(safe-area-inset-left,0px)) + 18px), var(--margin) calc(max(16px, env(safe-area-inset-left,0px)) + 18px), var(--margin) calc(max(16px, env(safe-area-inset-left,0px)) + 20px), transparent calc(max(16px, env(safe-area-inset-left,0px)) + 20px)),
+    repeating-linear-gradient(to bottom, var(--line-strong) 0 1px, transparent 1px 32px),
+    repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 8px);
+}
+.wrap{max-width:860px;margin:0 auto;padding-block:24px 64px;
+  padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px));
+  display:flex;flex-direction:column;gap:18px}
+.inner{margin-left:34px}
+@media (max-width:480px){.inner{margin-left:26px}}
+
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px}
+h1{font-size:clamp(2.2rem,7vw,3.4rem);font-weight:800;letter-spacing:-.02em;line-height:1;margin:0;text-wrap:balance}
+h1 em{font-style:normal;color:var(--red);font-family:var(--f-hand);font-weight:700;transform:rotate(-4deg);display:inline-block}
+.sub{color:var(--ink-soft);margin:6px 0 0;font-size:.95rem}
+
+.tabs{display:inline-flex;border:2px solid var(--ink);border-radius:6px;overflow:hidden}
+.tabs button{font:inherit;font-weight:700;font-size:.9rem;padding:8px 14px;border:0;background:transparent;color:var(--ink);cursor:pointer}
+.tabs button+button{border-left:2px solid var(--ink)}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+.panel{background:color-mix(in srgb, var(--card) 90%, transparent);border:1px solid var(--line-strong);border-radius:6px;padding:16px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.label{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.between{justify-content:space-between}
+.chip{font:inherit;font-size:.9rem;border:1px solid var(--line-strong);background:var(--chip);color:var(--ink);padding:6px 12px;border-radius:999px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--blue);border-color:var(--blue);color:var(--paper)}
+.chip:disabled{cursor:not-allowed;opacity:.55}
+:is(.chip,.btn,input,textarea,.mark,.tabs button,.x):focus-visible{outline:2px solid var(--red);outline-offset:2px}
+
+.btn{font:inherit;font-weight:700;font-size:1rem;border:2px solid var(--ink);background:var(--ink);color:var(--paper);padding:10px 20px;border-radius:4px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--ink)}
+.btn.red{background:var(--red);border-color:var(--red);color:#fff}
+.btn.sm{padding:6px 14px;font-size:.85rem}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.field{font:inherit;border:1px solid var(--line-strong);background:var(--card);color:var(--ink);border-radius:4px;padding:8px 10px;min-width:0}
+
+.board{display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center}
+@media (max-width:560px){.board{grid-template-columns:1fr}}
+.letter{width:116px;height:116px;border:3px solid var(--red);border-radius:50%;display:grid;place-items:center;
+  font-family:var(--f-hand);font-weight:700;font-size:4.3rem;color:var(--red);line-height:1;transform:rotate(-6deg);background:var(--card)}
+.letter.spin{animation:wob .08s linear infinite}
+@keyframes wob{50%{transform:rotate(4deg)}}
+@media (prefers-reduced-motion:reduce){.letter.spin{animation:none}}
+.timer{font-family:var(--f-mono);font-size:2.3rem;font-weight:700;font-variant-numeric:tabular-nums}
+.timer.low{color:var(--red)}
+.bar{height:6px;background:var(--line);border-radius:3px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--blue);width:100%;transition:width .25s linear}
+.bar.low i{background:var(--red)}
+.muted{color:var(--ink-soft);font-size:.9rem;margin:0}
+
+.grid{display:flex;flex-direction:column}
+.cell{display:grid;grid-template-columns:minmax(110px,190px) 1fr;gap:12px;align-items:center;min-height:48px;border-bottom:1px dashed var(--line-strong)}
+@media (max-width:480px){.cell{grid-template-columns:1fr;gap:0;padding-block:6px}}
+.cat{font-weight:700;font-size:.95rem}
+.cell input{font-family:var(--f-hand);font-size:1.35rem;color:var(--blue);background:transparent;border:0;border-bottom:1px solid transparent;padding:4px 2px;min-width:0;width:100%}
+.cell input:focus{border-bottom-color:var(--blue);outline:none}
+.cell input:disabled{opacity:.6}
+
+.turn{display:flex;flex-direction:column;align-items:flex-start;gap:12px;padding:20px 0}
+.turn .who{font-family:var(--f-hand);font-size:2.4rem;color:var(--blue);line-height:1.1}
+
+.tblwrap{overflow-x:auto;margin-inline:-4px}
+table{border-collapse:collapse;font-variant-numeric:tabular-nums;width:100%}
+th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft)}
+.corr td:first-child{font-weight:700;font-size:.9rem;white-space:nowrap}
+.ans{display:flex;align-items:center;justify-content:space-between;gap:6px;min-width:140px}
+.ans .w{font-family:var(--f-hand);font-size:1.2rem;color:var(--blue);overflow-wrap:anywhere}
+.ans .w.empty{color:var(--ink-soft)}
+.mark{font-family:var(--f-hand);font-weight:700;font-size:1.15rem;min-width:44px;text-align:center;border:1px dashed transparent;border-radius:4px;background:transparent;cursor:pointer;color:var(--ink-soft);padding:2px 4px}
+.mark:not(:disabled):hover{border-color:var(--line-strong)}
+.mark.ok{color:var(--ok)} .mark.dup{color:var(--amber)} .mark.ko{color:var(--red);text-decoration:line-through}
+.mark:disabled{cursor:default}
+tfoot td{font-family:var(--f-hand);color:var(--red);font-size:1.25rem;border-bottom:0}
+td.n{text-align:right;font-family:var(--f-hand);color:var(--red);font-size:1.15rem}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:.85rem;color:var(--ink-soft)}
+.legend b{font-family:var(--f-hand);font-size:1.05rem}
+
+.scores{display:flex;flex-wrap:wrap;gap:10px}
+.sc{display:flex;align-items:baseline;gap:8px;padding:6px 12px;border:1px solid var(--line-strong);border-radius:999px;background:var(--card)}
+.sc .nm{font-weight:700}
+.sc .pt{font-family:var(--f-hand);color:var(--red);font-size:1.3rem;line-height:1}
+.sc.lead{border-color:var(--red)}
+.plist{display:flex;flex-direction:column;gap:8px}
+.prow{display:flex;gap:8px;align-items:center}
+.prow input{flex:1}
+.x{font:inherit;border:1px solid var(--line-strong);background:transparent;color:var(--ink-soft);border-radius:4px;width:34px;height:34px;cursor:pointer}
+.x:disabled{opacity:.4;cursor:not-allowed}
+.you{font-size:.75rem;color:var(--ink-soft)}
+.custom{font:inherit;width:100%;border:1px solid var(--line-strong);background:var(--card);color:var(--ink);border-radius:4px;padding:8px;box-sizing:border-box}
+.notice{border-left:3px solid var(--red);padding:4px 0 4px 12px;margin:0;font-size:.92rem;line-height:1.45}
+</style>
+
+</head>
+<body>
+<div class="wrap">
+  <header class="inner">
+    <div>
+      <h1>Petit <em>Bac</em></h1>
+      <p class="sub">Une lettre, une catégorie, un mot. Le plus vite possible.</p>
+    </div>
+    <div class="tabs" id="modes" role="group" aria-label="Mode de jeu"></div>
+  </header>
+
+  <section class="panel inner" id="playersPanel" aria-label="Joueurs"></section>
+
+  <section class="panel inner" id="setup" aria-label="Réglages">
+    <div class="label">Catégories</div>
+    <div class="row" id="sets"></div>
+    <textarea id="customCats" class="custom" rows="2" hidden placeholder="Tes catégories, séparées par des virgules"></textarea>
+    <div class="label">Temps par manche</div>
+    <div class="row" id="times"></div>
+    <div class="label">Lettres</div>
+    <div class="row" id="letters"></div>
+  </section>
+
+  <section class="panel inner" aria-label="Manche">
+    <div class="board">
+      <div class="letter" id="letter" aria-live="polite">?</div>
+      <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+        <div class="row between">
+          <span class="label" id="roundLbl">Manche 1</span>
+          <span class="timer" id="timer">1:30</span>
+        </div>
+        <div class="bar" id="bar"><i id="barFill"></i></div>
+        <div class="row">
+          <button class="btn" id="go">Tirer une lettre</button>
+          <button class="btn red" id="stop" disabled>Stop !</button>
+        </div>
+        <p class="muted" id="hint"></p>
+      </div>
+    </div>
+    <div class="turn" id="turn" hidden>
+      <span class="label">Passe l'appareil à</span>
+      <span class="who" id="turnWho"></span>
+      <p class="muted">Les autres ne regardent pas l'écran. Le chrono démarre au clic.</p>
+      <button class="btn" id="ready">Je suis prêt·e</button>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section class="panel inner" id="checkPanel" aria-label="Correction" hidden>
+    <div class="row between">
+      <div class="label">Correction · lettre <span id="checkLetter"></span></div>
+      <div class="legend"><span><b style="color:var(--ok)">+2</b> mot unique</span><span><b style="color:var(--amber)">+1</b> mot en double</span><span><b style="color:var(--red)">0</b> refusé</span></div>
+    </div>
+    <p class="muted">Clique sur une note pour accepter ou refuser un mot. Les doublons sont détectés sans tenir compte des accents.</p>
+    <div class="tblwrap"><table class="corr" id="corr"></table></div>
+    <div class="row between">
+      <span class="muted" id="waitNote"></span>
+      <button class="btn" id="validate">Valider la manche</button>
+    </div>
+  </section>
+
+  <section class="panel inner" aria-label="Scores">
+    <div class="row between">
+      <div class="label">Scores</div>
+      <button class="btn ghost sm" id="reset">Nouvelle partie</button>
+    </div>
+    <div class="scores" id="scores"></div>
+    <div class="tblwrap"><table id="hist"></table></div>
+  </section>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script>
+/* ---------- Données ---------- */
+const SETS = {
+  "Classique": ["Prénom","Pays","Ville","Animal","Fruit ou légume","Métier","Objet","Marque"],
+  "BTP": ["Matériau","Corps d'état","Outil de chantier","Pathologie du bâti","Élément d'ouvrage","Engin","Pièce écrite / doc","Ville d'Île-de-France"],
+  "Culture": ["Film","Chanteur·se","Écrivain","Personnage historique","Plat","Sport","Instrument","Personnage biblique"],
+  "Perso": []
+};
+const TIMES = [[60,"1 min"],[90,"1 min 30"],[120,"2 min"],[180,"3 min"],[0,"Sans chrono"]];
+const LETTER_SETS = {"Faciles":"ABCDEFGHILMNOPRST","Toutes sauf KWXYZ":"ABCDEFGHIJLMNOPQRSTUV","Toutes":"ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+const MODES = [["solo","Solo"],["local","Même écran"],["online","En ligne"]];
+
+let P = {mode:"solo", set:"Classique", time:90, letters:"Faciles", custom:[], names:["Joueur 1","Joueur 2"], nick:""};
+try{ Object.assign(P, JSON.parse(localStorage.getItem("pb-prefs2")||"{}")); }catch(e){}
+SETS.Perso = P.custom || [];
+const save = ()=>{ try{ localStorage.setItem("pb-prefs2", JSON.stringify(P)); }catch(e){} };
+
+const $ = id => document.getElementById(id);
+const norm = s => (s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toUpperCase();
+const key = s => norm(s).replace(/[^A-Z0-9]/g,"");
+const fmt = s => `${Math.floor(s/60)}:${String(Math.max(0,s)%60).padStart(2,"0")}`;
+const esc = s => String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const curCats = () => P.set==="Perso" && SETS.Perso.length ? SETS.Perso : SETS[P.set==="Perso" ? "Classique" : P.set];
+function pickLetter(used){
+  const all=[...LETTER_SETS[P.letters]], pool=all.filter(l=>!used.includes(l));
+  const src=pool.length?pool:all; return src[Math.floor(Math.random()*src.length)];
+}
+
+/* ---------- Score commun ---------- */
+function score(cats, ids, words, ov, letter){
+  const out={}; ids.forEach(id=>out[id]={cells:[],total:0});
+  cats.forEach((_,i)=>{
+    const info=ids.map(id=>{
+      const w=((words[id]||[])[i]||"").trim(), n=key(w), k=id+"|"+i;
+      const auto = n.length>1 && n[0]===letter;
+      const valid = w ? (k in ov ? !!ov[k] : auto) : false;
+      return {id,w,n,k,valid};
+    });
+    const cnt={}; info.forEach(x=>{ if(x.valid) cnt[x.n]=(cnt[x.n]||0)+1; });
+    info.forEach(x=>{ const pts=x.valid?(cnt[x.n]>1?1:2):0; out[x.id].cells.push({...x,pts}); out[x.id].total+=pts; });
+  });
+  return out;
+}
+
+/* ---------- Rendus partagés ---------- */
+let gridKey=null;
+function ensureGrid(cats, k, enabled, clear){
+  const g=$("grid");
+  if(gridKey!==k){ gridKey=k; g.innerHTML="";
+    cats.forEach((c,i)=>{
+      const row=document.createElement("div"); row.className="cell";
+      const lab=document.createElement("label"); lab.className="cat"; lab.htmlFor="a"+i; lab.textContent=c;
+      const inp=document.createElement("input"); inp.id="a"+i; inp.autocomplete="off"; inp.spellcheck=false;
+      inp.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); const n=$("a"+(i+1)); n?n.focus():$("stop").click(); }});
+      row.append(lab,inp); g.appendChild(row);
+    });
+  }
+  cats.forEach((_,i)=>{ const a=$("a"+i); if(!a)return; if(clear) a.value=""; a.disabled=!enabled; });
+}
+const readGrid = cats => cats.map((_,i)=>($("a"+i)?.value||"").trim());
+function setPlaceholders(letter){ document.querySelectorAll(".cell input").forEach(a=>a.placeholder=letter?letter+"…":""); }
+function showTimer(left,dur){
+  const t=$("timer"); t.textContent = dur ? fmt(Math.ceil(left)) : "∞";
+  $("barFill").style.width = dur ? Math.max(0,left/dur*100)+"%" : "100%";
+  const low = dur && left<=10; t.classList.toggle("low",!!low); $("bar").classList.toggle("low",!!low);
+}
+function spin(final, done){
+  const L=$("letter"), all=[...LETTER_SETS[P.letters]]; L.classList.add("spin"); let n=0;
+  const iv=setInterval(()=>{ L.textContent=all[Math.floor(Math.random()*all.length)];
+    if(++n>14){ clearInterval(iv); L.classList.remove("spin"); L.textContent=final; done&&done(); } },70);
+}
+function renderCheck(cats, players, words, ov, letter, canToggle, onToggle){
+  const ids=players.map(p=>p.id), res=score(cats, ids, words, ov, letter), T=$("corr");
+  $("checkLetter").textContent=letter;
+  let h=`<thead><tr><th>Catégorie</th>${players.map(p=>`<th>${esc(p.name)}</th>`).join("")}</tr></thead><tbody>`;
+  cats.forEach((c,i)=>{
+    h+=`<tr><td>${esc(c)}</td>`;
+    players.forEach(p=>{ const x=res[p.id].cells[i];
+      const cls = x.pts===2?"ok":x.pts===1?"dup":"ko";
+      h+=`<td><div class="ans"><span class="w ${x.w?"":"empty"}">${x.w?esc(x.w):"—"}</span>`+
+         (x.w?`<button class="mark ${cls}" data-k="${esc(x.k)}" data-v="${x.valid?1:0}" ${canToggle?"":"disabled"} title="${x.valid?"Refuser":"Accepter"}">${x.pts?"+"+x.pts:"0"}</button>`:"")+
+         `</div></td>`; });
+    h+="</tr>";
+  });
+  h+=`</tbody><tfoot><tr><td>Manche</td>${players.map(p=>`<td>${res[p.id].total} pts</td>`).join("")}</tr></tfoot>`;
+  T.innerHTML=h;
+  T.querySelectorAll(".mark").forEach(b=>b.onclick=()=>onToggle(b.dataset.k, b.dataset.v!=="1"));
+  return res;
+}
+function renderScores(players, hist){
+  const tot={}; players.forEach(p=>tot[p.id]=0);
+  hist.forEach(h=>players.forEach(p=>tot[p.id]+= (h.pts[p.id]||0)));
+  const max=Math.max(0,...Object.values(tot));
+  $("scores").innerHTML = players.map(p=>`<div class="sc ${max>0&&tot[p.id]===max&&players.length>1?"lead":""}"><span class="nm">${esc(p.name)}</span><span class="pt">${tot[p.id]}</span></div>`).join("") || `<p class="muted">Aucun joueur.</p>`;
+  const T=$("hist");
+  if(!hist.length){ T.innerHTML=`<tbody><tr><td class="muted">Aucune manche jouée pour l'instant.</td></tr></tbody>`; return; }
+  T.innerHTML=`<thead><tr><th>Manche</th><th>Lettre</th>${players.map(p=>`<th style="text-align:right">${esc(p.name)}</th>`).join("")}</tr></thead><tbody>`+
+    [...hist].reverse().map(h=>`<tr><td>${h.round}</td><td style="font-family:var(--f-hand);font-size:1.2rem;color:var(--red)">${h.letter}</td>${players.map(p=>`<td class="n">${h.pts[p.id]??"–"}</td>`).join("")}</tr>`).join("")+`</tbody>`;
+}
+
+/* ---------- Réglages ---------- */
+function busy(){ return P.mode==="online" ? (O.state && ["play","check"].includes(O.state.phase)) : L.phase!=="idle"; }
+function chips(el, items, cur, onPick){
+  el.innerHTML="";
+  items.forEach(([v,lab])=>{ const b=document.createElement("button"); b.className="chip"; b.textContent=lab;
+    b.setAttribute("aria-pressed", v===cur); b.disabled = busy() && v!==cur; b.onclick=()=>{ if(!busy()) onPick(v); }; el.appendChild(b); });
+}
+function renderSetup(){
+  chips($("sets"), Object.keys(SETS).map(k=>[k,k]), P.set, v=>{ P.set=v; save(); renderAll(); });
+  chips($("times"), TIMES, P.time, v=>{ P.time=v; save(); renderAll(); });
+  chips($("letters"), Object.keys(LETTER_SETS).map(k=>[k,k]), P.letters, v=>{ P.letters=v; save(); renderAll(); });
+  $("customCats").hidden = P.set!=="Perso";
+  if(document.activeElement!==$("customCats")) $("customCats").value = SETS.Perso.join(", ");
+}
+$("customCats").addEventListener("input", e=>{ SETS.Perso=P.custom=e.target.value.split(",").map(s=>s.trim()).filter(Boolean).slice(0,15); save(); if(!busy()) renderPlay(); });
+
+/* ---------- Mode local (solo / même écran) ---------- */
+const L = {round:1, used:[], letter:null, cats:[], turn:0, words:{}, ov:{}, phase:"idle", hist:[], tick:null, left:0};
+function localPlayers(){ return P.mode==="solo" ? [{id:"p0",name:"Toi"}] : P.names.map((n,i)=>({id:"p"+i, name:n.trim()||("Joueur "+(i+1))})); }
+function localReset(){ clearInterval(L.tick); Object.assign(L,{round:1,used:[],letter:null,cats:[],turn:0,words:{},ov:{},phase:"idle",hist:[]}); $("letter").textContent="?"; gridKey=null; }
+function localDraw(){
+  if(L.phase!=="idle")return;
+  const l=pickLetter(L.used); L.phase="spin"; renderPlay();
+  spin(l, ()=>{ Object.assign(L,{letter:l, cats:curCats().slice(), turn:0, words:{}, ov:{}}); L.used.push(l);
+    if(localPlayers().length>1){ L.phase="ready"; renderAll(); } else localBegin(); });
+}
+function localBegin(){
+  L.phase="play"; L.left=P.time; renderAll();
+  ensureGrid(L.cats, "L"+L.round+"-"+L.turn, true, true); setPlaceholders(L.letter); $("a0")?.focus();
+  showTimer(L.left,P.time);
+  if(P.time){ clearInterval(L.tick); L.tick=setInterval(()=>{ L.left--; showTimer(L.left,P.time); if(L.left<=0) localEnd(true); },1000); }
+}
+function localEnd(timeout){
+  if(L.phase!=="play")return; clearInterval(L.tick);
+  const ps=localPlayers(); L.words[ps[L.turn].id]=readGrid(L.cats);
+  ensureGrid(L.cats, gridKey, false, true);
+  L.turn++; L.phase = L.turn<ps.length ? "ready" : "check"; L.timedOut=timeout; renderAll();
+}
+function localValidate(){
+  if(L.phase!=="check")return;
+  const ps=localPlayers(), res=score(L.cats, ps.map(p=>p.id), L.words, L.ov, L.letter), pts={};
+  ps.forEach(p=>pts[p.id]=res[p.id].total);
+  L.hist.push({round:L.round, letter:L.letter, pts}); L.round++; L.phase="idle"; renderAll();
+}
+
+/* ---------- Mode en ligne (Firebase) ---------- */
+// 1) Colle ici la configuration de ton projet Firebase (Paramètres du projet > Vos applications > Config)
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDYGn5CD3wXYi9p0qRZ27B9ZD5u5lIQI2E",
+  authDomain: "petit-bac-cfa70.firebaseapp.com",
+  projectId: "petit-bac-cfa70",
+  storageBucket: "petit-bac-cfa70.firebasestorage.app",
+  messagingSenderId: "847629253852",
+  appId: "1:847629253852:web:2d6b40dbe97da822728819"
+};
+const O = {inited:false, status:"loading", fs:null, uid:null, room:null, base:null, gref:null, unsubs:[], state:null, players:{}, answers:[], submitted:null, playKey:null, tick:null, err:null};
+const gdoc = () => O.gref;
+const fresh = () => ({gid:Math.random().toString(36).slice(2,10), round:1, phase:"lobby", letter:"", used:[], cats:[], duration:P.time, startedAt:0, ov:{}, hist:{}});
+const joined = () => !!(O.uid && O.room && O.players[O.uid]);
+const cleanCode = c => (c||"").toUpperCase().replace(/[^A-Z0-9]/g,"").slice(0,6);
+O.room = cleanCode(location.hash.slice(1)) || null;
+async function initOnline(){
+  if(O.inited) return; O.inited=true;
+  if(!window.firebase || !FIREBASE_CONFIG.apiKey || FIREBASE_CONFIG.apiKey.startsWith("COLLE")){ O.status="off"; return renderAll(); }
+  try{
+    firebase.initializeApp(FIREBASE_CONFIG);
+    const cred = await firebase.auth().signInAnonymously();
+    O.uid = cred.user.uid; O.fs = firebase.firestore(); O.status="on";
+    if(O.room) enterRoom(O.room);
+  }catch(e){ O.status="off"; O.err=e.code||e.message; }
+  renderAll();
+}
+function enterRoom(code){
+  O.unsubs.forEach(u=>u()); O.unsubs=[]; O.state=null; O.players={}; O.answers=[]; O.playKey=null;
+  O.room=code; try{ history.replaceState(null,"","#"+code); }catch(e){ location.hash=code; }
+  O.base = O.fs.collection("rooms").doc(code); O.gref = O.base.collection("meta").doc("state");
+  O.unsubs.push(O.gref.onSnapshot(s=>{ O.state=s.exists?s.data():null; onlineSync(); }, e=>{ O.err=e.code; renderAll(); }));
+  O.unsubs.push(O.base.collection("players").onSnapshot(q=>{ O.players={}; q.docs.forEach(d=>O.players[d.id]=d.data()); renderAll(); }, e=>{ O.err=e.code; renderAll(); }));
+  O.unsubs.push(O.base.collection("answers").onSnapshot(q=>{ O.answers=q.docs.map(d=>({id:d.id,...d.data()})); if(P.mode==="online") renderAll(); }, ()=>{}));
+  renderAll();
+}
+function exitRoom(){ O.unsubs.forEach(u=>u()); O.unsubs=[]; O.room=null; O.state=null; O.players={}; O.answers=[]; try{ history.replaceState(null,"",location.pathname+location.search); }catch(e){} renderAll(); }
+function createRoom(){ const A="ABCDEFGHJKMNPQRSTUVWXYZ23456789"; let c=""; for(let i=0;i<4;i++) c+=A[Math.floor(Math.random()*A.length)]; enterRoom(c); }
+const roomLink = () => location.href.split("#")[0]+"#"+O.room;
+async function write(fn){ try{ O.err=null; await fn(); }catch(e){ O.err=e?.code||"unavailable"; renderAll(); } }
+function onlineSync(){
+  const s=O.state;
+  if(s && s.phase==="play"){
+    const k=s.gid+"-"+s.round;
+    if(O.playKey!==k){ O.playKey=k; if(P.mode==="online"){ ensureGrid(s.cats, "O"+k, false, true); spin(s.letter, ()=>renderAll()); } }
+  }
+  if(s && s.phase==="check") onlineSubmit();
+  if(P.mode==="online") renderAll();
+}
+function onlineTick(){
+  clearInterval(O.tick);
+  O.tick=setInterval(()=>{ const s=O.state; if(P.mode!=="online"||!s||s.phase!=="play"){ clearInterval(O.tick); return; }
+    const left = s.duration ? s.duration-(Date.now()-s.startedAt)/1000 : 0;
+    showTimer(Math.min(s.duration,left), s.duration);
+    if(s.duration && left<=0) onlineStop(); },250);
+}
+async function onlineSubmit(){
+  const s=O.state; if(!s||!joined()) return; const k=s.gid+"-"+s.round;
+  if(O.submitted===k || gridKey!=="O"+k) return; O.submitted=k;
+  const words=readGrid(s.cats);
+  await write(()=>O.base.collection("answers").doc(`${s.gid}-${s.round}-${O.uid}`).set({gid:s.gid, round:s.round, uid:O.uid, words}));
+}
+async function onlineJoin(){
+  const nick=($("nick").value||"").trim().slice(0,24); if(!nick)return; P.nick=nick; save();
+  await write(()=>O.base.collection("players").doc(O.uid).set({nick, at:Date.now()}));
+  if(!O.state) await write(()=>gdoc().set(fresh()));
+}
+async function onlineLeave(){ await write(()=>O.base.collection("players").doc(O.uid).delete()); }
+async function onlineDraw(){
+  const s=O.state||fresh(); if(s.phase==="play"||s.phase==="check") return;
+  const l=pickLetter(s.used||[]);
+  await write(()=>gdoc().set({...s, phase:"play", letter:l, used:[...(s.used||[]),l], cats:curCats().slice(), duration:P.time, startedAt:Date.now()+1200, ov:{}}));
+}
+async function onlineStop(){
+  const s=O.state; if(!s||s.phase!=="play")return;
+  clearInterval(O.tick); await onlineSubmit();
+  await write(()=>gdoc().update({phase:"check"}));
+}
+function onlineRound(){ const s=O.state; return O.answers.filter(a=>a.gid===s.gid && a.round===s.round); }
+function onlineRoundPlayers(){ return onlineRound().map(a=>({id:a.uid, name:(O.players[a.uid]?.nick||"Joueur")+(a.uid===O.uid?" (toi)":"")})); }
+function setOv(k,v){ write(()=>gdoc().update(new firebase.firestore.FieldPath("ov",k), v)); }
+async function onlineValidate(){
+  const s=O.state; if(!s||s.phase!=="check")return;
+  const ans=onlineRound(), words={}; ans.forEach(a=>words[a.uid]=a.words);
+  const res=score(s.cats, ans.map(a=>a.uid), words, s.ov||{}, s.letter), pts={};
+  ans.forEach(a=>pts[a.uid]=res[a.uid].total);
+  await write(()=>gdoc().update("phase","lobby","round",s.round+1, new firebase.firestore.FieldPath("hist","r"+s.round), {round:s.round, letter:s.letter, pts}));
+}
+async function onlineNewGame(){
+  if(!O.room) return;
+  await write(()=>gdoc().set(fresh()));
+  for(const a of O.answers){ try{ await O.base.collection("answers").doc(a.id).delete(); }catch(e){} }
+}
+function onlineScorePlayers(){
+  const ids=new Set(Object.keys(O.players)); Object.values(O.state?.hist||{}).forEach(h=>Object.keys(h.pts).forEach(i=>ids.add(i)));
+  return [...ids].map(id=>({id, name:(O.players[id]?.nick||"Ancien joueur")+(id===O.uid?" (toi)":"")}));
+}
+
+/* ---------- Panneau joueurs ---------- */
+function renderPlayers(){
+  const el=$("playersPanel");
+  if(P.mode==="online" && ["nick","roomCode"].includes(document.activeElement?.id)) return;
+  if(P.mode==="solo"){ el.hidden=true; return; }
+  el.hidden=false;
+  if(P.mode==="local"){
+    const lock=L.phase!=="idle" || L.hist.length>0;
+    el.innerHTML=`<div class="row between"><div class="label">Joueurs autour de l'écran</div>${lock?'<span class="muted">Nouvelle partie pour changer le nombre de joueurs</span>':""}</div>
+      <div class="plist">${P.names.map((n,i)=>`<div class="prow"><input class="field" id="pn${i}" value="${esc(n)}" maxlength="24" aria-label="Nom du joueur ${i+1}"><button class="x" data-i="${i}" ${lock||P.names.length<=2?"disabled":""} aria-label="Retirer">×</button></div>`).join("")}</div>
+      <div><button class="btn ghost sm" id="addP" ${lock||P.names.length>=8?"disabled":""}>Ajouter un joueur</button></div>`;
+    P.names.forEach((_,i)=>$("pn"+i).addEventListener("input",e=>{ P.names[i]=e.target.value; save(); renderScores(localPlayers(), L.hist); }));
+    el.querySelectorAll(".x").forEach(b=>b.onclick=()=>{ P.names.splice(+b.dataset.i,1); save(); renderAll(); });
+    $("addP").onclick=()=>{ P.names.push("Joueur "+(P.names.length+1)); save(); renderAll(); };
+    return;
+  }
+  // en ligne
+  if(O.status==="loading"){ el.innerHTML=`<p class="muted">Connexion…</p>`; return; }
+  if(O.status==="off"){
+    el.innerHTML=`<p class="notice">Le mode en ligne n'est pas encore configuré${O.err?" ("+esc(O.err)+")":""}. Colle la configuration Firebase dans le fichier (voir le guide d'installation). En attendant, les modes Solo et Même écran fonctionnent.</p>`; return;
+  }
+  if(!O.room){
+    el.innerHTML=`<div class="label">Salle de jeu</div>
+      <div class="row"><button class="btn" id="mkRoom">Créer une salle</button><span class="muted">ou</span>
+      <input class="field" id="roomCode" maxlength="6" placeholder="Code reçu" style="width:120px;text-transform:uppercase"><button class="btn ghost" id="goRoom">Entrer</button></div>
+      <p class="muted">Crée une salle puis envoie le lien à tes joueurs. Ils peuvent aussi taper le code.</p>`;
+    $("mkRoom").onclick=createRoom;
+    const go=()=>{ const c=cleanCode($("roomCode").value); if(c.length>=3) enterRoom(c); };
+    $("goRoom").onclick=go; $("roomCode").addEventListener("keydown",e=>{ if(e.key==="Enter") go(); });
+    return;
+  }
+  const list=Object.entries(O.players).map(([id,p])=>`<div class="sc"><span class="nm">${esc(p.nick)}</span>${id===O.uid?'<span class="you">toi</span>':""}</div>`).join("");
+  el.innerHTML = `<div class="row between"><div class="label">Salle <span style="font-family:var(--f-mono);font-size:1rem;color:var(--red);letter-spacing:.15em">${esc(O.room)}</span></div>
+      <div class="row"><button class="btn ghost sm" id="copyLink">Copier le lien</button><button class="btn ghost sm" id="exitRoom" ${busy()?"disabled":""}>Changer de salle</button></div></div>
+    <input class="field" id="linkTxt" readonly value="${esc(roomLink())}" aria-label="Lien de la salle" style="font-family:var(--f-mono);font-size:.8rem">
+    ${joined()
+      ? `<div class="scores">${list}</div><div class="row"><button class="btn ghost sm" id="leave" ${busy()?"disabled":""}>Quitter la partie</button></div>`
+      : `<div class="row"><input class="field" id="nick" maxlength="24" placeholder="Ton pseudo" value="${esc(P.nick)}" style="flex:1;min-width:160px"><button class="btn" id="join">Rejoindre</button></div>${list?`<div class="scores">${list}</div>`:""}`}
+    <p class="muted">Tout le monde voit la même lettre et le même chrono. N'importe quel joueur peut tirer la lettre ou crier « Stop ! ».</p>
+    ${O.err?`<p class="notice">Erreur de synchronisation (${esc(O.err)}). Vérifie les règles Firestore et la connexion.</p>`:""}`;
+  $("join")?.addEventListener("click", onlineJoin);
+  $("nick")?.addEventListener("input", e=>{ P.nick=e.target.value; save(); });
+  $("nick")?.addEventListener("keydown", e=>{ if(e.key==="Enter") onlineJoin(); });
+  $("leave")?.addEventListener("click", onlineLeave);
+  $("exitRoom").onclick=exitRoom;
+  $("copyLink").onclick=async()=>{ const b=$("copyLink"); try{ await navigator.clipboard.writeText(roomLink()); b.textContent="Lien copié"; }catch(e){ $("linkTxt").select(); b.textContent="Sélectionné, copie-le"; } setTimeout(()=>{ if($("copyLink")) $("copyLink").textContent="Copier le lien"; },2000); };
+}
+
+/* ---------- Manche ---------- */
+function renderPlay(){
+  const go=$("go"), stop=$("stop"), hint=$("hint"), turn=$("turn"), grid=$("grid");
+  turn.hidden=true; grid.hidden=false;
+  if(P.mode!=="online"){
+    const ps=localPlayers();
+    $("roundLbl").textContent="Manche "+L.round;
+    go.textContent = L.round>1 ? "Lettre suivante" : "Tirer une lettre";
+    go.disabled = L.phase!=="idle"; stop.disabled = L.phase!=="play";
+    if(L.phase==="idle"){ ensureGrid(curCats(), "idle-"+curCats().join(), false, true); setPlaceholders(""); showTimer(P.time,P.time);
+      hint.textContent = ps.length>1 ? `Tire une lettre. Chaque joueur jouera à son tour avec le même chrono.` : "Tire une lettre pour lancer le chrono."; }
+    if(L.phase==="ready"){ grid.hidden=true; turn.hidden=false; $("turnWho").textContent=ps[L.turn].name; showTimer(P.time,P.time);
+      hint.textContent=`Lettre ${L.letter} · joueur ${L.turn+1} sur ${ps.length}.`; }
+    if(L.phase==="play") hint.textContent=`Lettre ${L.letter}${ps.length>1?" · "+ps[L.turn].name:""}. Remplis les cases puis « Stop ! ». Entrée passe à la case suivante.`;
+    if(L.phase==="check"){ grid.hidden=true; hint.textContent=(L.timedOut?"Temps écoulé. ":"")+"Corrigez ensemble ci-dessous."; }
+    return;
+  }
+  const s=O.state, ok=O.status==="on" && joined();
+  $("roundLbl").textContent="Manche "+(s?.round||1);
+  go.textContent = (s?.round||1)>1 ? "Lettre suivante" : "Tirer une lettre";
+  if(!s || s.phase==="lobby"){
+    go.disabled=!ok; stop.disabled=true;
+    ensureGrid(curCats(), "idle-"+curCats().join(), false, true); setPlaceholders(""); showTimer(P.time,P.time);
+    if(!$("letter").classList.contains("spin")) $("letter").textContent = s?.letter || "?";
+    hint.textContent = ok ? "Le premier qui tire la lettre lance la manche pour tout le monde." : "Rejoins la partie pour jouer.";
+  } else if(s.phase==="play"){
+    const k="O"+s.gid+"-"+s.round;
+    if(gridKey!==k) ensureGrid(s.cats, k, false, true);
+    ensureGrid(s.cats, k, ok && !$("letter").classList.contains("spin"), false); setPlaceholders(s.letter);
+    go.disabled=true; stop.disabled=!ok;
+    if(!$("letter").classList.contains("spin")) $("letter").textContent=s.letter;
+    hint.textContent = ok ? `Lettre ${s.letter}. Le premier qui finit crie « Stop ! » pour tout le monde.` : "Une manche est en cours. Rejoins la partie pour la suivante.";
+    onlineTick();
+  } else {
+    go.disabled=true; stop.disabled=true; grid.hidden=true; $("letter").textContent=s.letter;
+    hint.textContent="Stop ! Corrigez ensemble ci-dessous.";
+  }
+}
+
+/* ---------- Orchestration ---------- */
+function renderAll(){
+  $("modes").innerHTML=""; MODES.forEach(([m,lab])=>{ const b=document.createElement("button"); b.textContent=lab; b.setAttribute("aria-pressed",P.mode===m); b.onclick=()=>setMode(m); $("modes").appendChild(b); });
+  renderPlayers(); renderSetup(); renderPlay();
+  const cp=$("checkPanel"), val=$("validate"), wn=$("waitNote");
+  if(P.mode!=="online"){
+    cp.hidden = L.phase!=="check";
+    if(L.phase==="check") renderCheck(L.cats, localPlayers(), L.words, L.ov, L.letter, true, (k,v)=>{ L.ov[k]=v; renderAll(); });
+    val.disabled=false; wn.textContent="";
+    renderScores(localPlayers(), L.hist);
+  } else {
+    const s=O.state;
+    cp.hidden = !(s && s.phase==="check");
+    if(s && s.phase==="check"){
+      const ps=onlineRoundPlayers(), words={}; onlineRound().forEach(a=>words[a.uid]=a.words);
+      renderCheck(s.cats, ps, words, s.ov||{}, s.letter, joined(), setOv);
+      val.disabled=!joined(); wn.textContent=`${ps.length} copie${ps.length>1?"s":""} reçue${ps.length>1?"s":""} sur ${Object.keys(O.players).length}`;
+    }
+    renderScores(onlineScorePlayers(), Object.values(s?.hist||{}).sort((a,b)=>a.round-b.round));
+  }
+}
+function setMode(m){
+  if(P.mode===m)return;
+  clearInterval(L.tick); clearInterval(O.tick);
+  if(P.mode!=="online" || m!=="online") localReset();
+  P.mode=m; save(); gridKey=null;
+  if(m==="online"){ initOnline(); if(O.state?.phase==="play") O.playKey=null, onlineSync(); }
+  else $("letter").textContent="?";
+  renderAll();
+}
+$("go").onclick=()=> P.mode==="online" ? onlineDraw() : localDraw();
+$("stop").onclick=()=> P.mode==="online" ? onlineStop() : localEnd(false);
+$("ready").onclick=localBegin;
+$("validate").onclick=()=> P.mode==="online" ? onlineValidate() : localValidate();
+$("reset").onclick=()=>{ if(P.mode==="online"){ if(O.status==="on") onlineNewGame(); } else { localReset(); renderAll(); } };
+
+if(O.room) P.mode="online";
+renderAll();
+if(P.mode==="online") initOnline();
+</script>
+</body>
+</html>
